@@ -1,22 +1,36 @@
-
-
-    name: build
+name: build
 on: [push]
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - run: Expand-Archive *.zip -DestinationPath p -Force
+
+      - name: List files
+        run: dir
+        shell: cmd
+
+      - name: Unzip
         shell: pwsh
+        run: |
+          $zip = Get-ChildItem -Filter *.zip | Select-Object -First 1
+          Write-Host "Found zip: $($zip.Name)"
+          Expand-Archive -Path $zip.FullName -DestinationPath p -Force
+
       - uses: NuGet/setup-nuget@v2
       - uses: microsoft/setup-msbuild@v2
-      - run: |
+
+      - name: Build
+        shell: pwsh
+        run: |
           $s = (Get-ChildItem p -Recurse -Filter PKHeX.sln).FullName
+          Write-Host "Found sln: $s"
           nuget restore $s
           msbuild $s /p:Configuration=Release /m
-        shell: pwsh
+
       - uses: actions/upload-artifact@v4
         with:
-          name: PKHeX
+          name: PKHeX-Win7
           path: p/**/PKHeX.exe
+
+    
