@@ -1,0 +1,29 @@
+name: Build PKHeX
+on: [push]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract zip
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter *.zip -Recurse | ForEach-Object { Expand-Archive $_.FullName -DestinationPath . -Force }
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          $sln = Get-ChildItem -Recurse -Filter PKHeX.sln | Select-Object -First 1 -ExpandProperty FullName
+          msbuild $sln /p:Configuration=Release
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: PKHeX-exe-Win7
+          path: |
+            **/bin/Release/*.exe
+            **/bin/Release/*.dll
