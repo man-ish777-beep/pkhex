@@ -1,25 +1,30 @@
-name: Build PKHeX 22.09.13
+name: Build 22.09.13
 on: [push]
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+      - name: Unzip source
+        run: |
+          powershell Expand-Archive -Path *.zip -DestinationPath . -Force
+          dir
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
+      - uses: NuGet/setup-nuget@v1
+        with:
+          nuget-version: 5.x
 
-      - name: Restore Packages
-        run: nuget restore PKHeX.sln
+      - uses: microsoft/setup-msbuild@v1.3
 
-      - name: Build Solution
-        run: msbuild PKHeX.sln /p:Configuration=Release /p:Platform="Any CPU"
+      - name: Restore
+        run: for /r %%f in (*.sln) do nuget restore "%%f"
+
+      - name: Build
+        run: for /r %%f in (*.sln) do msbuild "%%f" /p:Configuration=Release
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: PKHeX-22.09.13
-          path: '**/bin/Release/*.exe'
+          path: '**/PKHeX.exe'
