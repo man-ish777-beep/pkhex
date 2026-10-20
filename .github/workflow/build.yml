@@ -27,3 +27,4 @@ jobs:
           path: |
             **/bin/Release/*.exe
             **/bin/Release/*.dll
+
