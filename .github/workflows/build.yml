@@ -1,25 +1,25 @@
-name: Build PKHeX
+name: Build PKHeX 22.09.13
 on: [push]
-
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Build EXE
-        run: dotnet publish PKHeX.WinForms/PKHeX.WinForms.csproj -c Release -r win-x86 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore Packages
+        run: nuget restore PKHeX.sln
+
+      - name: Build Solution
+        run: msbuild PKHeX.sln /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: PKHeX-exe
-          path: |
-            **/publish/*.exe
-            **/publish/*.dll
+          name: PKHeX-22.09.13
+          path: '**/bin/Release/*.exe'
