@@ -1,0 +1,25 @@
+name: Build PKHeX
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build EXE
+        run: dotnet publish PKHeX.WinForms/PKHeX.WinForms.csproj -c Release -r win-x86 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: PKHeX-exe
+          path: |
+            **/publish/*.exe
+            **/publish/*.dll
